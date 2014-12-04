@@ -1,0 +1,25 @@
+{
+  "name": "mbed-asynch-serial-example",
+  "version": "0.0.0",
+  "description": "Asynch Serial example",
+  "keywords": [
+    "mbed",
+    "cpputest",
+    "serial"
+  ],
+  "author": "martin.kojtal@arm.com",
+  "licenses": [
+    {
+      "url": "https://spdx.org/licenses/Apache-2.0",
+      "type": "Apache-2.0"
+    }
+  ],
+  "extraIncludes": [
+  ],
+  "dependencies": {
+    "mbed": "git@github.com:mbedmicro/mbed_private.git",
+    "mbed-cpputest" : "git@github.com:ARMmbed/mbed-cpputest.git"
+  },
+  "targetDependencies": {},
+  "bin": "./source"
+}
