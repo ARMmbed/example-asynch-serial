@@ -1,5 +1,5 @@
 {
-  "name": "mbed-asynch-serial-example",
+  "name": "mbed-example-asynch-serial",
   "version": "0.0.1",
   "description": "Asynch Serial example",
   "keywords": [
