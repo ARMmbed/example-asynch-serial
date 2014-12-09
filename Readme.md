@@ -2,9 +2,26 @@
 
 ## The demo application
 
-This repository is an example for asynchronous Serial, a test unit with defined test cases for asynchronous Serial methods, using two Serial modules. It currently supports K64F board.
+This repository is an example for asynchronous Serial, a test unit with defined test cases for asynchronous Serial methods, using two Serial modules.
 
 Please look at the target's pin definitions in the serial_asynch.cpp file (TEST_SERIAL_ONE_TX_PIN and TEST_SERIAL_TWO_RX_PIN). The Tx pin from one serial module should be connected to RX pin on another serial module.
+
+Currently only the following configuration is supported:
+- Freescale FRDM-K64F board
+- GCC ARM Embedded Toolchain
+
+### Installation
+This is a yotta executable. You need the latest [yotta](https://github.com/ARMmbed/yotta) release version (latest tested: 0.0.36) and all of its dependencies. See also the [yotta documentation](http://armmbed.github.io/yotta/) for further details about the installation and the build process.
+
+Assuming you have cloned this repository, move to its folder. Select target, install and build:
+```bash
+cd /path/to/mbed-example-asynch-serial
+yotta target frdm-k64f-gcc
+yotta install
+yotta build
+```
+
+The resulting binary file will be located in `build/frdm-k64f-gcc/source/`. After flashing, you can observe the UART output on the USB serial port.
 
 The output on the console should be:
 ```
@@ -23,6 +40,7 @@ OK (8 tests, 8 ran, 28 checks, 0 ignored, 0 filtered out, 57 ms)
 
 ```
 
+
 ## API Overview
 The current mbed Serial API is byte-oriented, providing blocking methods (putc() and getc()) and non-blocking interrupt method to enable/disable TX/RX IRQ (attach()).
 
@@ -34,7 +52,8 @@ The write and read methods initiate the transfer and return to the caller. The c
 The Serial API was expanded by 6 new methods which are defined in the SerialBase class.
 
 ### TX methods
-The write method is used to start transferring data (TX transfer). It starts the transfer and return to the caller. The completition invokes registered TX event callback, only if any was defined.
+The write method is used to start transferring data (TX transfer). There are 2 write methods, with different buffer width - 8-bit or 16-bit. 
+The write method starts the transfer and return to the caller. The completition invokes registered TX event callback, only if any was defined.
 ```
 int write(uint8_t *buffer, int length, void (*callback)(int), int event = SERIAL_EVENT_TX_COMPLETE);
 
@@ -48,6 +67,7 @@ void abort_write();
 ```
 
 ### RX methods
+There are 2 read methods, with different buffer width - 8-bit or 16-bit. 
 The read method is used to start reading data (RX transfer). The completition invokes registred RX event callback, only if any was defined.
 ```
 int read(uint8_t *buffer, int length, void (*callback)(int), int event = SERIAL_EVENT_RX_COMPLETE, uint8_t char_match = SERIAL_RESERVED_CHAR_MATCH);
