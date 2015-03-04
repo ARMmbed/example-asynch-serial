@@ -1,5 +1,5 @@
 /* mbed Microcontroller Library
- * Copyright (c) 2013 ARM Limited
+ * Copyright (c) 2015 ARM Limited
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -15,8 +15,6 @@
  */
 #include <TestHarness.h>
 #include <mbed.h>
-#include <SPI.h>
-#include <spi_api.h>
 #include <stdio.h>
 
 /* Serial asynch cross */
