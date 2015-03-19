@@ -25,13 +25,15 @@ The resulting binary file will be located in `build/frdm-k64f-gcc/source/`. Afte
 
 The output on the console should be:
 ```
-TEST(Serial_Asynchronous, char_matching_failed) - 1 ms
+TEST(Serial_Asynchronous, char_matching_with_complete) - 2 ms
+TEST(Serial_Asynchronous, char_matching_failed) - 2 ms
 TEST(Serial_Asynchronous, char_matching_success) - 2 ms
 TEST(Serial_Asynchronous, rx_framing_error) - 4 ms
 TEST(Serial_Asynchronous, rx_parity_error) - 2 ms
 TEST(Serial_Asynchronous, long_tx_long_rx) - 2 ms
 TEST(Serial_Asynchronous, short_tx_short_rx) - 1 ms
 TEST(Serial_Asynchronous, short_tx_0_rx) - 1 ms
+
 
 OK (8 tests, 8 ran, 28 checks, 0 ignored, 0 filtered out, 57 ms)
 
@@ -52,7 +54,7 @@ The write and read methods initiate the transfer and return to the caller. The c
 The Serial API was expanded by 6 new methods which are defined in the SerialBase class.
 
 ### TX methods
-The write method is used to start transferring data (TX transfer). There are 2 write methods, with different buffer width - 8-bit or 16-bit. 
+The write method is used to start transferring data (TX transfer). There are 2 write methods, with different buffer width - 8-bit or 16-bit.
 The write method starts the transfer and return to the caller. The completition invokes registered TX event callback, only if any was defined.
 ```
 int write(uint8_t *buffer, int length, void (*callback)(int), int event = SERIAL_EVENT_TX_COMPLETE);
@@ -67,12 +69,12 @@ void abort_write();
 ```
 
 ### RX methods
-There are 2 read methods, with different buffer width - 8-bit or 16-bit. 
+There are 2 read methods, with different buffer width - 8-bit or 16-bit.
 The read method is used to start reading data (RX transfer). The completition invokes registred RX event callback, only if any was defined.
 ```
-int read(uint8_t *buffer, int length, void (*callback)(int), int event = SERIAL_EVENT_RX_COMPLETE, uint8_t char_match = SERIAL_RESERVED_CHAR_MATCH);
+int read(uint8_t *buffer, int length, void (*callback)(int), int event = SERIAL_EVENT_RX_COMPLETE, unsigned char char_match = SERIAL_RESERVED_CHAR_MATCH);
 
-int read(uint16_t *buffer, int length, void (*callback)(int), int event = SERIAL_EVENT_RX_COMPLETE, uint8_t char_match = SERIAL_RESERVED_CHAR_MATCH);
+int read(uint16_t *buffer, int length, void (*callback)(int), int event = SERIAL_EVENT_RX_COMPLETE, unsigned char char_match = SERIAL_RESERVED_CHAR_MATCH);
 
 ```
 
