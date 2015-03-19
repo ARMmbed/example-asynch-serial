@@ -1,8 +1,8 @@
 {
   "name": "mbed-example-asynch-serial",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Asynch Serial example",
-  "private" : true,
+  "private": true,
   "keywords": [
     "mbed",
     "cpputest",
