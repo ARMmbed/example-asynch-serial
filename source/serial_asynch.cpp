@@ -60,6 +60,8 @@ TEST_GROUP(Serial_Asynchronous)
 
     Serial *serial_tx;
     Serial *serial_rx;
+    event_callback_t tx_callback;
+    event_callback_t rx_callback;
 
     void setup()
     {
@@ -69,6 +71,8 @@ TEST_GROUP(Serial_Asynchronous)
         tx_event_flag = 0;
         rx_complete = false;
         rx_event_flag = 0;
+        tx_callback.attach(cb_tx_done);
+        rx_callback.attach(cb_rx_done);
 
         // Set the default value of tx_buf
         for (uint32_t i = 0; i < sizeof(tx_buf); i++) {
@@ -121,7 +125,7 @@ TEST_GROUP(Serial_Asynchronous)
 TEST(Serial_Asynchronous, short_tx_0_rx)
 {
     int rc;
-    rc = serial_tx->write(tx_buf, SHORT_XFR, cb_tx_done, -1);
+    rc = serial_tx->write(tx_buf, SHORT_XFR, tx_callback, -1);
     CHECK_EQUAL(0, rc);
 
     while (!tx_complete);
@@ -134,8 +138,8 @@ TEST(Serial_Asynchronous, short_tx_0_rx)
 TEST(Serial_Asynchronous, short_tx_short_rx)
 {
     int rc;
-    serial_rx->read(rx_buf, SHORT_XFR, cb_rx_done, -1);
-    rc = serial_tx->write(tx_buf, SHORT_XFR, cb_tx_done, -1);
+    serial_rx->read(rx_buf, SHORT_XFR, rx_callback, -1);
+    rc = serial_tx->write(tx_buf, SHORT_XFR, tx_callback, -1);
     CHECK_EQUAL(0, rc);
 
     while ((!tx_complete) || (!rx_complete));
@@ -152,8 +156,8 @@ TEST(Serial_Asynchronous, short_tx_short_rx)
 TEST(Serial_Asynchronous, long_tx_long_rx)
 {
     int rc;
-    serial_rx->read(rx_buf, LONG_XFR, cb_rx_done, -1);
-    rc = serial_tx->write(tx_buf, LONG_XFR, cb_tx_done, -1);
+    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1);
+    rc = serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
     CHECK_EQUAL(0, rc);
 
     while ((!tx_complete) || (!rx_complete));
@@ -173,8 +177,8 @@ TEST(Serial_Asynchronous, rx_parity_error)
     // Set different parity for RX and TX
     serial_rx->format(8, SerialBase::Even, 1);
     serial_tx->format(8, SerialBase::Odd, 1);
-    serial_rx->read(rx_buf, LONG_XFR, cb_rx_done, -1);
-    rc = serial_tx->write(tx_buf, LONG_XFR, cb_tx_done, -1);
+    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1);
+    rc = serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
     CHECK_EQUAL(0, rc);
 
     while ((!tx_complete) || (!rx_complete));
@@ -187,8 +191,8 @@ TEST(Serial_Asynchronous, rx_framing_error)
 {
    int rc;
    serial_tx->baud(4800);
-   serial_rx->read(rx_buf, LONG_XFR, cb_rx_done, -1);
-   rc = serial_tx->write(tx_buf, LONG_XFR, cb_tx_done, -1);
+   serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1);
+   rc = serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
    CHECK_EQUAL(0, rc);
 
    while ((!tx_complete) || (!rx_complete));
@@ -200,8 +204,8 @@ TEST(Serial_Asynchronous, rx_framing_error)
 TEST(Serial_Asynchronous, char_matching_success)
 {
     // match found
-    serial_rx->read(rx_buf, LONG_XFR, cb_rx_done, -1, (uint8_t)(TEST_BYTE_TX_BASE+5));
-    serial_tx->write(tx_buf, LONG_XFR, cb_tx_done, -1);
+    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1, (uint8_t)(TEST_BYTE_TX_BASE+5));
+    serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
 
     while ((!tx_complete) || (!rx_complete));
 
@@ -214,8 +218,8 @@ TEST(Serial_Asynchronous, char_matching_success)
 TEST(Serial_Asynchronous, char_matching_failed)
 {
     // no match found (specified match char is not in tx buffer)
-    serial_rx->read(rx_buf, LONG_XFR, cb_rx_done, -1, (uint8_t)(TEST_BYTE_TX_BASE  + sizeof(tx_buf)));
-    serial_tx->write(tx_buf, LONG_XFR, cb_tx_done, -1);
+    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1, (uint8_t)(TEST_BYTE_TX_BASE  + sizeof(tx_buf)));
+    serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
 
     while ((!tx_complete) || (!rx_complete));
 
@@ -227,8 +231,8 @@ TEST(Serial_Asynchronous, char_matching_failed)
 
 TEST(Serial_Asynchronous, char_matching_with_complete)
 {
-    serial_rx->read(rx_buf, LONG_XFR, cb_rx_done, -1, (uint8_t)(TEST_BYTE_TX_BASE  + sizeof(tx_buf) - 1));
-    serial_tx->write(tx_buf, LONG_XFR, cb_tx_done, -1);
+    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1, (uint8_t)(TEST_BYTE_TX_BASE  + sizeof(tx_buf) - 1));
+    serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
 
     while ((!tx_complete) || (!rx_complete));
 
