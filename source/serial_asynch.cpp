@@ -1,3 +1,4 @@
+
 /* mbed Microcontroller Library
  * Copyright (c) 2015 ARM Limited
  *
@@ -13,11 +14,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-#include <TestHarness.h>
-#include <mbed.h>
 #include <stdio.h>
 
-/* Serial asynch cross */
+#include "mbed.h"
+#include "minar/minar.h"
+#include "Event.h"
+
+#if DEVICE_SERIAL_ASYNCH
 
 // Device config
 #if defined(TARGET_K64F)
@@ -33,211 +36,71 @@
 #define SHORT_XFR 3
 #define LONG_XFR 16
 #define TEST_BYTE_TX_BASE 0x5555
-#define TEST_BYTE_RX      0x5A5A
+#define TEST_BYTE_RX_BASE 0x5A5A
 
-volatile int tx_event_flag;
-volatile bool tx_complete;
+using namespace minar;
 
-volatile int rx_event_flag;
-volatile bool rx_complete;
+class SerialTest {
 
-void cb_tx_done(int event)
-{
-    tx_complete = true;
-    tx_event_flag = event;
-}
-
-void cb_rx_done(int event)
-{
-    rx_complete = true;
-    rx_event_flag = event;
-}
-
-TEST_GROUP(Serial_Asynchronous)
-{
-    uint8_t tx_buf[LONG_XFR];
-    uint8_t rx_buf[LONG_XFR];
-
-    Serial *serial_tx;
-    Serial *serial_rx;
-    event_callback_t tx_callback;
-    event_callback_t rx_callback;
-
-    void setup()
-    {
-        serial_tx = new Serial(TEST_SERIAL_ONE_TX_PIN, NC);
-        serial_rx = new Serial(NC, TEST_SERIAL_TWO_RX_PIN);
-        tx_complete = false;
-        tx_event_flag = 0;
-        rx_complete = false;
-        rx_event_flag = 0;
-        tx_callback.attach(cb_tx_done);
-        rx_callback.attach(cb_rx_done);
-
-        // Set the default value of tx_buf
+public:
+    SerialTest(): serial_tx(TEST_SERIAL_ONE_TX_PIN, NC), serial_rx(NC, TEST_SERIAL_TWO_RX_PIN) {
         for (uint32_t i = 0; i < sizeof(tx_buf); i++) {
             tx_buf[i] = i + TEST_BYTE_TX_BASE;
         }
-        memset(rx_buf, TEST_BYTE_RX, sizeof(rx_buf));
-    }
-
-    void teardown()
-    {
-        delete serial_tx;
-        serial_tx = NULL;
-        delete serial_rx;
-        serial_rx = NULL;
 
     }
 
-    uint32_t cmpnbufc(uint8_t expect, uint8_t *actual, uint32_t offset, uint32_t end, const char *file, uint32_t line)
-    {
-        uint32_t i;
-        for (i = offset; i < end; i++){
-            if (expect != actual[i]) {
-                break;
+    void start() {
+        printf("Starting short transfer test\r\n");
+        init_rx_buffer();
+        printf("Res is %d\r\n", serial_rx.read(rx_buf, SHORT_XFR, event_callback_t(this, &SerialTest::short_transfer_complete_cb), SERIAL_EVENT_RX_COMPLETE));
+        printf("Res is %d\r\n", serial_tx.write(tx_buf, SHORT_XFR, NULL, 0));
+    }
+
+private:
+    void init_rx_buffer() {
+        for (uint32_t i = 0; i < sizeof(rx_buf); i++) {
+            tx_buf[i] = 0;
+        }
+    }
+
+    void compare_buffers(uint32_t len) {
+         for (uint32_t i = 0; i < len; i ++) {
+            if (tx_buf[i] != rx_buf[i]) {
+                printf("MISMATCH at position %u: expected %d, got %d\r\n", i, (int)tx_buf[i], (int)rx_buf[i]);
             }
         }
-        if (i < end) {
-            CHECK_EQUAL_LOCATION((int)expect, (int)actual[i], file, line);
-        }
-        CHECK_EQUAL_LOCATION(end, i, file, line);
-        return i;
     }
 
-    uint32_t cmpnbuf(uint8_t *expect, uint8_t *actual, uint32_t offset, uint32_t end, const char *file, uint32_t line)
-    {
-        uint32_t i;
-        for (i = offset; i < end; i++){
-            if (expect[i] != actual[i]) {
-                break;
-            }
-        }
-        if (i < end) {
-            CHECK_EQUAL_LOCATION((int)expect[i], (int)actual[i], file, line);
-        }
-        CHECK_EQUAL_LOCATION(end, i, file, line);
-        return i;
+    void short_transfer_complete_cb(int narg) {
+        printf("Short transfer DONE, event is %d\r\n", narg);
+        compare_buffers(SHORT_XFR);
+        printf("Starting long transfer test\r\n");
+        init_rx_buffer();
+        printf("Res is %d\r\n", serial_rx.read(rx_buf, LONG_XFR, event_callback_t(this, &SerialTest::long_transfer_complete_cb), SERIAL_EVENT_RX_COMPLETE));
+        printf("Res is %d\r\n", serial_tx.write(tx_buf, LONG_XFR, NULL, 0));
     }
 
+    void long_transfer_complete_cb(int narg) {
+        printf("Long transfer DONE, event is %d\r\n", narg);
+        compare_buffers(LONG_XFR);
+        printf("**** Test done ****\r\n");
+    }
+
+private:
+    Serial serial_tx;
+    Serial serial_rx;
+    uint8_t tx_buf[LONG_XFR];
+    uint8_t rx_buf[LONG_XFR];
 };
 
-TEST(Serial_Asynchronous, short_tx_0_rx)
-{
-    int rc;
-    rc = serial_tx->write(tx_buf, SHORT_XFR, tx_callback, -1);
-    CHECK_EQUAL(0, rc);
-
-    while (!tx_complete);
-
-    CHECK_EQUAL(SERIAL_EVENT_TX_COMPLETE, tx_event_flag);
-    // rx buffer unchanged
-    cmpnbufc(TEST_BYTE_RX, rx_buf, 0, sizeof(rx_buf), __FILE__, __LINE__);
+void app_start(int, char*[]) {
+    static SerialTest test;
+    Scheduler::postCallback(FunctionPointer0<void>(&test, &SerialTest::start).bind());
 }
 
-TEST(Serial_Asynchronous, short_tx_short_rx)
-{
-    int rc;
-    serial_rx->read(rx_buf, SHORT_XFR, rx_callback, -1);
-    rc = serial_tx->write(tx_buf, SHORT_XFR, tx_callback, -1);
-    CHECK_EQUAL(0, rc);
-
-    while ((!tx_complete) || (!rx_complete));
-
-    CHECK_EQUAL(SERIAL_EVENT_TX_COMPLETE, tx_event_flag);
-    CHECK_EQUAL(SERIAL_EVENT_RX_COMPLETE, rx_event_flag);
-
-    // Check that the receive buffer contains the fill byte.
-    cmpnbuf(tx_buf, rx_buf, 0, SHORT_XFR, __FILE__, __LINE__);
-    // Check that remaining portion of the receive buffer contains the rx test byte
-    cmpnbufc(TEST_BYTE_RX, rx_buf, SHORT_XFR, sizeof(rx_buf), __FILE__, __LINE__);
+#else
+void app_start(int, char*[]) {
 }
+#endif
 
-TEST(Serial_Asynchronous, long_tx_long_rx)
-{
-    int rc;
-    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1);
-    rc = serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
-    CHECK_EQUAL(0, rc);
-
-    while ((!tx_complete) || (!rx_complete));
-
-    CHECK_EQUAL(SERIAL_EVENT_TX_COMPLETE, tx_event_flag);
-    CHECK_EQUAL(SERIAL_EVENT_RX_COMPLETE, rx_event_flag);
-
-    // Check that the receive buffer contains the fill byte.
-    cmpnbuf(tx_buf, rx_buf, 0, LONG_XFR, __FILE__, __LINE__);
-    // Check that remaining portion of the receive buffer contains the rx test byte
-    cmpnbufc(TEST_BYTE_RX, rx_buf, LONG_XFR, sizeof(rx_buf), __FILE__, __LINE__);
-}
-
-TEST(Serial_Asynchronous, rx_parity_error)
-{
-    int rc;
-    // Set different parity for RX and TX
-    serial_rx->format(8, SerialBase::Even, 1);
-    serial_tx->format(8, SerialBase::Odd, 1);
-    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1);
-    rc = serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
-    CHECK_EQUAL(0, rc);
-
-    while ((!tx_complete) || (!rx_complete));
-
-    CHECK_EQUAL(SERIAL_EVENT_TX_COMPLETE, tx_event_flag);
-    CHECK_EQUAL(SERIAL_EVENT_RX_PARITY_ERROR, rx_event_flag);
-}
-
-TEST(Serial_Asynchronous, rx_framing_error)
-{
-   int rc;
-   serial_tx->baud(4800);
-   serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1);
-   rc = serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
-   CHECK_EQUAL(0, rc);
-
-   while ((!tx_complete) || (!rx_complete));
-
-   CHECK_EQUAL(SERIAL_EVENT_TX_COMPLETE, tx_event_flag);
-   CHECK_EQUAL(SERIAL_EVENT_RX_FRAMING_ERROR, rx_event_flag);
-}
-
-TEST(Serial_Asynchronous, char_matching_success)
-{
-    // match found
-    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1, (uint8_t)(TEST_BYTE_TX_BASE+5));
-    serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
-
-    while ((!tx_complete) || (!rx_complete));
-
-    CHECK_EQUAL(SERIAL_EVENT_TX_COMPLETE, tx_event_flag);
-    CHECK_EQUAL(SERIAL_EVENT_RX_CHARACTER_MATCH, rx_event_flag);
-
-    cmpnbufc(TEST_BYTE_RX, rx_buf, 5, sizeof(rx_buf), __FILE__, __LINE__);
-}
-
-TEST(Serial_Asynchronous, char_matching_failed)
-{
-    // no match found (specified match char is not in tx buffer)
-    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1, (uint8_t)(TEST_BYTE_TX_BASE  + sizeof(tx_buf)));
-    serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
-
-    while ((!tx_complete) || (!rx_complete));
-
-    CHECK_EQUAL(SERIAL_EVENT_TX_COMPLETE, tx_event_flag);
-    CHECK_EQUAL(SERIAL_EVENT_RX_COMPLETE, rx_event_flag);
-
-    cmpnbuf(tx_buf, rx_buf, 0, LONG_XFR, __FILE__, __LINE__);
-}
-
-TEST(Serial_Asynchronous, char_matching_with_complete)
-{
-    serial_rx->read(rx_buf, LONG_XFR, rx_callback, -1, (uint8_t)(TEST_BYTE_TX_BASE  + sizeof(tx_buf) - 1));
-    serial_tx->write(tx_buf, LONG_XFR, tx_callback, -1);
-
-    while ((!tx_complete) || (!rx_complete));
-
-    CHECK_EQUAL(SERIAL_EVENT_TX_COMPLETE, tx_event_flag);
-    CHECK_EQUAL((SERIAL_EVENT_RX_COMPLETE | SERIAL_EVENT_RX_CHARACTER_MATCH), rx_event_flag);
-
-    cmpnbuf(tx_buf, rx_buf, 0, LONG_XFR, __FILE__, __LINE__);
-}
