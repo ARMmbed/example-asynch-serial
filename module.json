@@ -1,5 +1,5 @@
 {
-  "name": "mbed-example-asynch-serial",
+  "name": "example-asynch-serial",
   "version": "0.0.4",
   "description": "Asynch Serial example",
   "private": true,
@@ -18,7 +18,7 @@
   "extraIncludes": [],
   "dependencies": {
     "mbed": "~3.0.2",
-    "mbed-cpputest": "~0.0.7"
+    "cpputest": "~0.0.7"
   },
   "targetDependencies": {},
   "bin": "./source"
