@@ -53,7 +53,7 @@ public:
     void start() {
         printf("Starting short transfer test\r\n");
         init_rx_buffer();
-        printf("Res is %d\r\n", serial_rx.read(rx_buf, SHORT_XFR, event_callback_t(this, &SerialTest::short_transfer_complete_cb), SERIAL_EVENT_RX_COMPLETE));
+        printf("Res is %d\r\n", serial_rx.read(rx_buf, SHORT_XFR, Serial::event_callback_t(this, &SerialTest::short_transfer_complete_cb), SERIAL_EVENT_RX_COMPLETE));
         printf("Res is %d\r\n", serial_tx.write(tx_buf, SHORT_XFR, NULL, 0));
     }
 
@@ -72,16 +72,18 @@ private:
         }
     }
 
-    void short_transfer_complete_cb(int narg) {
+    void short_transfer_complete_cb(Buffer buf, int narg) {
+        (void)buf;
         printf("Short transfer DONE, event is %d\r\n", narg);
         compare_buffers(SHORT_XFR);
         printf("Starting long transfer test\r\n");
         init_rx_buffer();
-        printf("Res is %d\r\n", serial_rx.read(rx_buf, LONG_XFR, event_callback_t(this, &SerialTest::long_transfer_complete_cb), SERIAL_EVENT_RX_COMPLETE));
+        printf("Res is %d\r\n", serial_rx.read(rx_buf, LONG_XFR, Serial::event_callback_t(this, &SerialTest::long_transfer_complete_cb), SERIAL_EVENT_RX_COMPLETE));
         printf("Res is %d\r\n", serial_tx.write(tx_buf, LONG_XFR, NULL, 0));
     }
 
-    void long_transfer_complete_cb(int narg) {
+    void long_transfer_complete_cb(Buffer buf, int narg) {
+        (void)buf;
         printf("Long transfer DONE, event is %d\r\n", narg);
         compare_buffers(LONG_XFR);
         printf("**** Test done ****\r\n");
