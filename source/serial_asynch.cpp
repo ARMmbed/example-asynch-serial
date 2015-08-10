@@ -101,6 +101,7 @@ void app_start(int, char*[]) {
 
 #else
 void app_start(int, char*[]) {
+    printf("The target does not support Serial asynch API.\r\n");
 }
 #endif
 
