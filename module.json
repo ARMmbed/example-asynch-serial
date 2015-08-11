@@ -1,6 +1,6 @@
 {
   "name": "example-asynch-serial",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Asynch Serial example",
   "private": true,
   "keywords": [
