@@ -46,7 +46,7 @@ TX and RX pin definitions are target specific - the code and the physical board 
 
 4. Copy ``build/frdm-k64f-gcc/source/example-asynch-serial.bin`` to your mbed board and wait until the LED next to the USB port stops blinking.
 
-5. Start the serial terminal emulator and connect to the virtual serial port presented by FRDM-K64F. For settings, use 9600 baud, 8N1, no flow control.
+5. Start the serial terminal emulator and connect to the virtual serial port presented by FRDM-K64F. For settings, use 115200 baud, 8N1, no flow control.
 
 6. Press the reset button on the board.
 

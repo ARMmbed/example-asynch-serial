@@ -98,11 +98,17 @@ private:
 
 void app_start(int, char*[]) {
     static SerialTest test;
+    // set 115200 baud rate for stdout
+    static Serial pc(USBTX, USBRX);
+    pc.baud(115200);
     Scheduler::postCallback(FunctionPointer0<void>(&test, &SerialTest::start).bind());
 }
 
 #else
 void app_start(int, char*[]) {
+    // set 115200 baud rate for stdout
+    static Serial pc(USBTX, USBRX);
+    pc.baud(115200);
     printf("The target does not support Serial asynch API.\r\n");
 }
 #endif
