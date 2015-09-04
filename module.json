@@ -2,7 +2,6 @@
   "name": "example-asynch-serial",
   "version": "0.2.0",
   "description": "Asynch Serial example",
-  "private": true,
   "keywords": [
     "mbed",
     "serial"
