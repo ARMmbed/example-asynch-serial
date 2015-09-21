@@ -60,7 +60,7 @@ public:
 private:
     void init_rx_buffer() {
         for (uint32_t i = 0; i < sizeof(rx_buf); i++) {
-            tx_buf[i] = 0;
+            rx_buf[i] = 0;
         }
     }
 
