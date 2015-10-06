@@ -18,7 +18,7 @@
 
 #include "mbed.h"
 #include "minar/minar.h"
-#include "mbed-util/Event.h"
+#include "core-util/Event.h"
 
 #if DEVICE_SERIAL_ASYNCH
 
