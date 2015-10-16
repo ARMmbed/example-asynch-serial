@@ -22,14 +22,9 @@
 
 #if DEVICE_SERIAL_ASYNCH
 
-// Device config
-#if defined(TARGET_K64F)
-#define TEST_SERIAL_ONE_TX_PIN PTC17 // uart3
-#define TEST_SERIAL_TWO_RX_PIN PTD2  // uart2
-
-#else
-
-#error Target not supported
+#if !defined(YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_TX) || !defined(YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_RX)
+#error This example requires serial test pins to be defined. Please define the hardware.test-pins.serial.tx/rx \
+    yotta confing values
 #endif
 
 // Test config
@@ -43,7 +38,7 @@ using namespace minar;
 class SerialTest {
 
 public:
-    SerialTest(): serial_tx(TEST_SERIAL_ONE_TX_PIN, NC), serial_rx(NC, TEST_SERIAL_TWO_RX_PIN) {
+    SerialTest(): serial_tx(YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_TX, NC), serial_rx(NC, YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_RX) {
         for (uint32_t i = 0; i < sizeof(tx_buf); i++) {
             tx_buf[i] = i + TEST_BYTE_TX_BASE;
         }
