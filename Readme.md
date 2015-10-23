@@ -19,17 +19,28 @@ To build and run this example the following requirements are necessary:
 
 ### Pins
 
-TX and RX pin definitions are target specific - the code and the physical board must both be using the same pins:
+TX and RX pin definitions are target-specific.  To function correctly, the code and the physical board must both be using the same pins.  Follow these steps to determine which pins the code is configured to use.
 
-1. To know which pins the code is looking for, see the ``serial_asynch.cpp`` file for this sample. The pins are defined as ``TEST_SERIAL_ONE_TX_PIN`` and ``TEST_SERIAL_TWO_RX_PIN``.
+1. First, find the pin references in the source files.  In this example, view ``serial_asynch.cpp``. The pin references are ``YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_TX`` and ``YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_RX``.
 
-2. To know where on your board those pins are, please look at its [pinout picture](http://developer.mbed.org/platforms/FRDM-K64F/#overview).
+2. Next, find the target-specific pin definitions corresponding to the pin references in the target's ``target.json`` file.   In this example, the file is located at ``yotta_targets/frdm-k64f-gcc/target.json``.
+
+ Each keyword in the pin reference represents a level in the target configuration structure.  To find what YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL resolves to, look under config...hardware...test-pins...serial.
+
+ In this example, the serial tx and rx pins are defined as:
+ ```
+ "serial": {
+        "tx": "PTC17",
+        "rx": "PTD2"
+ }
+ ```
+3. Finally, locate the pins (i.e. PTC17, PTD2) on the board's [pinout picture](http://developer.mbed.org/platforms/FRDM-K64F/#overview).
 
 ### Getting Started
 
 1. Connect the FRDM-K64F to the computer with the micro-USB cable, being careful to use the micro-USB port labeled "OpenSDA".
 
-2. Connect TEST_SERIAL_ONE_TX_PIN to TEST_SERIAL_TWO_RX_PIN. See the previous section for an explanation if you do not know how to locate these.
+2. Connect YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_TX to YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_RX. See the previous section for an explanation if you do not know how to locate these.
 
 3. Assuming you have cloned this repository or receive it with a release tarball, open a terminal window and navigate to the repository's folder.
 
