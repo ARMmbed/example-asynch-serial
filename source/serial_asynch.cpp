@@ -16,7 +16,7 @@
  */
 #include <stdio.h>
 
-#include "mbed.h"
+#include "mbed-drivers/mbed.h"
 #include "minar/minar.h"
 #include "core-util/Event.h"
 
