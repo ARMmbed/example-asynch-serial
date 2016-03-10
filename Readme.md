@@ -23,8 +23,10 @@ TX and RX pin definitions are target-specific.  To function correctly, the code 
 
 1. First, find the pin references in the source files.  In this example, view ``serial_asynch.cpp``. The pin references are ``YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_TX`` and ``YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL_RX``.
 
-2. Next, find the target-specific pin definitions corresponding to the pin references in the target's ``target.json`` file.   In this example, the file is located at ``yotta_targets/frdm-k64f-gcc/target.json``.
-
+2. Next, find these target-specific pin references in the configuration data by running the command:
+ ```
+ yotta config
+ ```
  Each keyword in the pin reference represents a level in the target configuration structure.  To find what YOTTA_CFG_HARDWARE_TEST_PINS_SERIAL resolves to, look under config...hardware...test-pins...serial.
 
  In this example, the serial tx and rx pins are defined as:
@@ -34,7 +36,7 @@ TX and RX pin definitions are target-specific.  To function correctly, the code 
         "rx": "PTD2"
  }
  ```
-3. Finally, locate the pins (i.e. PTC17, PTD2) on the board's [pinout picture](http://developer.mbed.org/platforms/FRDM-K64F/#overview).
+3. Finally, locate the pins (i.e. PTC17, PTD2) on the board's [pinout picture](https://www.mbed.com/en/development/hardware/boards/nxp/frdm_k64f/#overview).
 
 ### Getting Started
 
