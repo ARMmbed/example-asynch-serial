@@ -36,7 +36,11 @@ TX and RX pin definitions are target-specific.  To function correctly, the code 
         "rx": "PTD2"
  }
  ```
-3. Finally, locate the pins (i.e. PTC17, PTD2) on the board's [pinout picture](https://www.mbed.com/en/development/hardware/boards/nxp/frdm_k64f/#overview).
+
+3. Locate the pins (i.e. PTC17, PTD2) on the board's pinout picture: <img src="https://developer.mbed.org/media/uploads/sam_grove/frdm-k64f-pinnout-1.jpg" width="700">
+
+4. Finally, create a loopback, connect the pins together by a wire. 
+
 
 ### Getting Started
 
